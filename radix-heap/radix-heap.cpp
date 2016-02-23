@@ -11,34 +11,51 @@
 int main()
 {
 	// Problem #1: wartoœci (elementy, nie priorytety) w kolejce musz¹ byæ unikalne jeœli u¿ywamy lookup table
-	// Problem #2: coœ siê sypie z pamiêci¹ :v ale dopiero przy pop - czyli pewnie reorganizacja (?)
+	// Problem #2: wartoœci nie s¹ sprawdzane (np. czy spe³niaj¹ warunki wstawienia), ale to oszczêdza parê cykli
 
-	typedef RadixHeap<unsigned> rheap;
-	rheap heap(20000 << 2);
+	typedef RadixHeap<unsigned, unsigned> rheap;
 	rheap::element tmp;
-	std::priority_queue<unsigned> queue;
 
-	//int numbers[] = { 7,58,49,59,13,8,13,49,51,7,23,30,16,39,11,10,9,63,33,48,57 };
-	const int count = 20000;
+	int count = 500000;
+#define _BIG_DEBUG 0
+#if _BIG_DEBUG == 0
+	rheap heap(count);
 	int *numbers = new int[count];
-	srand(time(0));
-	for (int i = 0; i < count; ++i) numbers[i] = rand() % (count << 2);
-	
+	// klucze to [1,2,3..] a wartoœci to [0,3,6..]
+	for (int i = 0; i < count; ++i) numbers[i] = i * 3;
+
 	// Dodawanie
 	for (int i = 0; i < count; ++i) {
-		if(!heap.in_heap(numbers[i])) heap.push(numbers[i], i);
+		heap.push(i, numbers[i]);
 	}
-	/*for (int i = count / 2; i > count / 2; --i) {
-		if (!heap.in_heap(numbers[i])) continue;
-		heap.reduce_priority(numbers[i], i, i > 20 ? i - 20 : i + 20);
-	}*/
+	for (int i = 1; i < (count >> 2); ++i) {
+		heap.change_priority(i, numbers[i], numbers[i] - 2);
+	}
+#endif
+#if _BIG_DEBUG == 1
+					//0  1  2  3 4  5  6  7  8  9 10 11 12 13 14 15 16 17
+	int numbers[] = { 7,58,59,13,8,49,51,23,30,16,39,11,10,9, 63,33,48,57};
+	count = sizeof(numbers) / sizeof(numbers[0]);
 
+	rheap heap(count);
+	for (int i = 0; i < count; ++i) heap.push(i, numbers[i]);
+	heap.dump();
+	int numbers2[] = { 2, 0, 4 };
+	for (int i = 0; i < 3; ++i) heap.change_priority(numbers2[i], numbers[numbers2[i]], numbers[numbers2[i]] - 3);
+	heap.dump();
+#endif
+// Test szybkoœci dla std::queue
+#if _BIG_DEBUG == 2
+#include <queue>
+	std::priority_queue<unsigned> heap;
+	for (int i = 0; i < count >> 4; ++i) heap.push(i);
+#endif
 	// Usuwanie
 	while (!heap.empty()) {
-		tmp = heap.pop();
-		//printf("zdjeta wartosc: %d, o priorytecie: %d\n", tmp.value, tmp.key);
+		heap.pop();
 	}
-
+	printf("\n\nKolejka oprozniona");
+	 
 	return 0;
 }
 
