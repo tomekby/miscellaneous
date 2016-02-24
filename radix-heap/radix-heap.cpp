@@ -2,34 +2,30 @@
 //
 
 #include "stdafx.h"
-#include <iostream>
 #include "vector.h"
 #include "radix.h"
 #include <queue>
-#include <ctime>
+#include <vector>
 
 int main()
 {
 	// Problem #1: wartoœci (elementy, nie priorytety) w kolejce musz¹ byæ unikalne jeœli u¿ywamy lookup table
 	// Problem #2: wartoœci nie s¹ sprawdzane (np. czy spe³niaj¹ warunki wstawienia), ale to oszczêdza parê cykli
+	// Problem #3: resize-down wektora spowalnia kolejkê o... ~30%-50%
 
 	typedef RadixHeap<unsigned, unsigned> rheap;
 	rheap::element tmp;
 
-	int count = 500000;
-#define _BIG_DEBUG 0
+	int count = 2000000;
+#define _BIG_DEBUG 1
 #if _BIG_DEBUG == 0
 	rheap heap(count);
-	int *numbers = new int[count];
-	// klucze to [1,2,3..] a wartoœci to [0,3,6..]
-	for (int i = 0; i < count; ++i) numbers[i] = i * 3;
-
 	// Dodawanie
 	for (int i = 0; i < count; ++i) {
-		heap.push(i, numbers[i]);
+		heap.push(i, i / 12);
 	}
-	for (int i = 1; i < (count >> 2); ++i) {
-		heap.change_priority(i, numbers[i], numbers[i] - 2);
+	for (int i = 100; i < (count >> 1); ++i) {
+		heap.change_priority(i, i / 12 - 2);
 	}
 #endif
 #if _BIG_DEBUG == 1
@@ -41,14 +37,18 @@ int main()
 	for (int i = 0; i < count; ++i) heap.push(i, numbers[i]);
 	heap.dump();
 	int numbers2[] = { 2, 0, 4 };
-	for (int i = 0; i < 3; ++i) heap.change_priority(numbers2[i], numbers[numbers2[i]], numbers[numbers2[i]] - 3);
+	for (int i = 0; i < 3; ++i) heap.change_priority(numbers2[i], numbers[numbers2[i]] - 3);
 	heap.dump();
 #endif
 // Test szybkoœci dla std::queue
 #if _BIG_DEBUG == 2
-#include <queue>
-	std::priority_queue<unsigned> heap;
-	for (int i = 0; i < count >> 4; ++i) heap.push(i);
+	std::vector<unsigned> heap;
+	for (int i = 0; i < count; ++i) heap.push_back(i);
+	std::make_heap(heap.begin(), heap.end());
+	while (!heap.empty()) {
+		std::pop_heap(heap.begin(), heap.end());
+		heap.pop_back();
+	}
 #endif
 	// Usuwanie
 	while (!heap.empty()) {

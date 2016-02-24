@@ -1,7 +1,12 @@
 #pragma once
 #include <cstddef>
 #include <ostream>
-#include <cassert>
+
+/**
+ * Czy kontener ma automatycznie zmniejszaæ swoj¹ objêtoœæ wraz z ubytkiem elementów?
+ * Znacznie spowalnia, ale oszczêdza pamiêæ, która jest zwalniana z niszczeniem kontenera
+ */
+#define AUTO_RESIZE_DOWN 0
 
 /**
  * Uproszczona implementacja std::vector
@@ -47,8 +52,10 @@ public:
 	}
 	// Trochê inny sposób dzia³ania ni¿ w std::vector - zamiast back() i pop_back() pop_back() zwraca zdejmowan¹ wartoœæ
 	T& pop_back() {
+#if AUTO_RESIZE_DOWN
 		// Zmniejszenie objêtoœci wektora jeœli nie jest potrzebna
 		if (_size / _GROWTH_FACTOR > _count * 2) resize(_size / _GROWTH_FACTOR);
+#endif
 		if (_count > 0) return _buffer[--_count];
 		return T();
 	}
