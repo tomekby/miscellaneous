@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <ostream>
+#include <cassert>
 
 /**
  * Czy kontener ma automatycznie zmniejszaæ swoj¹ objêtoœæ wraz z ubytkiem elementów?
@@ -37,9 +38,9 @@ public:
 		return _buffer[pos];
 	}
 	// Objêtoœæ
-	const bool empty() { return _count == 0; }
+	const bool empty() const { return _count == 0; }
 	const size_t size() const { return _count; }
-	const size_t capacity() { return _size; }
+	const size_t capacity() const { return _size; }
 	// Modyfikatory
 	void clear() {
 		delete[] _buffer;
@@ -56,8 +57,8 @@ public:
 		// Zmniejszenie objêtoœci wektora jeœli nie jest potrzebna
 		if (_size / _GROWTH_FACTOR > _count * 2) resize(_size / _GROWTH_FACTOR);
 #endif
-		if (_count > 0) return _buffer[--_count];
-		return T();
+		assert(_count > 0);
+		return _buffer[--_count];
 	}
 	// Resize bufora do odpowiedniego rozmiaru
 	void resize(size_t new_size) {

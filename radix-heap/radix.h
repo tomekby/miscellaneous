@@ -42,6 +42,7 @@
  * - tablica jest przechowywana w sposób ci¹g³y, co znacznie zmniejsza czas dostêpu do danych
  * - u¿ywane operacje dodawania/usuwania elementów wykonuj¹ siê w czasie O(1) - push_back/pop_back
  * - okrojony vector w tej implementacji jest znacznie szybszy od std::vector (push_back/emplace_back)
+ * - testy wg. Visuala: http://ideone.com/wxwrwg
  * 
  * Implementowane na podstawie:
  * - http://ssp.impulsetrain.com/radix-heap.html
