@@ -37,7 +37,9 @@
  * Pozwala na implementacjê alg. Dijkstry o z³o¿onoœci ~O(m+n*logC)
  * Przy okazji jest znacznie prostszy w implementacji ni¿ np. Kopiec Fibonacciego
  * Wersja wykorzystuj¹ca lookup table (USE_LOOKUP_TABLES = 1) dzia³a tylko jeœli value_t
- * jest liczb¹ ca³kowit¹ ca³kowit¹ (np. numer wierzcho³ka w alg. Dijkstry)
+ * jest liczb¹ ca³kowit¹ ca³kowit¹ (np. numer wierzcho³ka w alg. Dijkstry).
+ *
+ * Testy jednostkowe, ³¹cznie ~20 z u¿yciem boost::test potwierdzaj¹ poprawnoœæ dzia³ania
  *
  * Ww. dyrektywy u¿ywane s¹ do warunkowej kompilacji kodu dziêki czemu mo¿na go dostosowaæ
  * w zale¿noœci od wymagañ (zu¿ycie pamiêci/szybkoœæ). W³¹czenie obu rodzajów cache mo¿e

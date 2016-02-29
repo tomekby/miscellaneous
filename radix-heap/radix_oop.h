@@ -102,6 +102,8 @@ namespace radix {
 	 * Potencjalnie szybsza wersja przy wykorzystaniu dla alg. Dijkstry
 	 * Przy okazji pozwala na zmianê priorytetu elementów bêd¹cych w kolejce
 	 *
+	 * @todo: lepiej by by³o chyba trzymaæ mapê dla ka¿dego kube³ka osobno (?)
+	 *
 	 * Wymagania:
 	 *	- klucz jest intem
 	 *	- elementy wrzucane s¹ nie mniejsze ni¿ ostatni usuniêty element
@@ -113,7 +115,7 @@ namespace radix {
 		class key_t = unsigned,
 		class bucket_t = std::vector<std::pair<value_t, key_t>>
 	>
-	class lookup_heap : queue<value_t, key_t, bucket_t> {
+	class lookup_queue : queue<value_t, key_t, bucket_t> {
 		typedef queue<value_t, key_t, bucket_t> parent_t;
 		typedef std::pair<size_t, key_t> _pos_prio_t;
 		typedef typename parent_t::element_t element_t;
