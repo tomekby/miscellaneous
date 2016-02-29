@@ -15,10 +15,13 @@ int main()
 	// Problem #3: resize-down wektora spowalnia kolejkê o... ~30%-50%
 
 	typedef RadixHeap<unsigned, unsigned> rheap;
+	typedef std::pair<unsigned, unsigned> iipair;
+	typedef std::vector<iipair> iiv;
+//#define _BIG_DEBUG 1
+#ifdef _BIG_DEBUG
 	rheap::element tmp;
 
-	int count = 1 << 24;
-#define _BIG_DEBUG 0
+	int count = 1 << 22;
 // Duuuuu¿a iloœæ danych dla rheap
 #if _BIG_DEBUG == 0
 	rheap heap(count);
@@ -28,7 +31,7 @@ int main()
 	}
 #if USE_LOOKUP_TABLES
 	for (int i = 100; i < (count >> 1); ++i) {
-		heap.change_priority(i, i / 12 - 2);
+		heap.reduce_priority(i, i / 12 - 2);
 	}
 #endif
 // Ma³a (sta³a) iloœæ danych dla kolejki
@@ -41,7 +44,7 @@ int main()
 	for (int i = 0; i < count; ++i) heap.push(i, numbers[i]);
 	heap.dump();
 	int numbers2[] = { 2, 0, 4 };
-	for (int i = 0; i < 3; ++i) heap.change_priority(numbers2[i], numbers[numbers2[i]] - 3);
+	for (int i = 0; i < 3; ++i) heap.reduce_priority(numbers2[i], numbers[numbers2[i]] - 3);
 	heap.dump();
 #endif
 // Opró¿nianie kolejki
@@ -86,6 +89,19 @@ int main()
 	std::vector<unsigned> test;
 	for (unsigned i = 0; i < vec_test; ++i) test.push_back(i);
 	std::sort(test.begin(), test.end());
+#endif
+#else
+	iiv n;
+	int x = 0;
+			   // x :  0   1   2   3  4   5   6   7   8   9  10  11  12  13 14  15  16  17
+	for (unsigned i : {7, 58, 59, 13, 8, 49, 51, 23, 30, 16, 39, 11, 10, 9, 63, 33, 48, 57})
+		n.push_back(iipair(x++, i));
+	rheap heap(0xff);
+	std::for_each(n.begin(), n.end(), [&](auto i) { heap.push(i.first, i.second); });
+	heap.pop();
+	heap.reduce_priority(7, 20);
+	heap.dump();
+
 #endif
 	 
 	return 0;

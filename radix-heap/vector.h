@@ -7,7 +7,9 @@
  * Czy kontener ma automatycznie zmniejszaæ swoj¹ objêtoœæ wraz z ubytkiem elementów?
  * Znacznie spowalnia, ale oszczêdza pamiêæ, która jest zwalniana z niszczeniem kontenera
  */
-#define AUTO_RESIZE_DOWN 0
+#ifndef AUTO_RESIZE_DOWN
+	#define AUTO_RESIZE_DOWN 0
+#endif
 
 /**
  * Uproszczona implementacja std::vector

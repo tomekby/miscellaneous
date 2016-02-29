@@ -10,12 +10,16 @@
  * priorytetu w czasie mniej-wiêcej sta³ym. Dodatkowo, cachowanie wymusza wrzucanie do kolejki wy³¹cznie
  * unikalnych wartoœci (przez u¿ycie trywialnej funkcji hashuj¹cej)
  */
-#define USE_LOOKUP_TABLES 1
+#ifndef USE_LOOKUP_TABLES
+	#define USE_LOOKUP_TABLES 1
+#endif
 /**
  * Czy u¿ywaæ __lzcnt() wymagaj¹cego obs³ugi SSE4 przez procesor
  * Jeœli 0, bêdzie u¿yte nieznacznie wolniejsze _BitScanReverse()
  */
-#define USE_SSE4 1
+#ifndef USE_SSE4
+	#define USE_SSE4 1
+#endif
 /**
  * Czy Szukanie minimum w kube³ku ma siê odbywaæ przy ka¿dej operacji (bêdzie cachowane dla pop()),
  * czy tylko w pop()
@@ -23,7 +27,9 @@
  * reduce_priority (przenosimy minimum do innego kube³ka)
  * Wy³¹czenie gdy USE_LOOKUP_TABLES == 0 nie ma sensu, bo oszczêdzi niewiele pamiêci a spowolni pop()
  */
-#define CACHE_MIN 1
+#ifndef CACHE_MIN
+	#define CACHE_MIN 1
+#endif
 
 /**
  * Radix heap - "kopiec kube³kowy"
@@ -80,6 +86,7 @@ public:
 	 * @param element_count maksymalna iloœæ elementów (np. wierzcho³ków) przechowywanych w kopcu
 	 */
 #if USE_LOOKUP_TABLES
+	RadixHeap() : _element_count(0) {}
 	RadixHeap(const position_t element_count) : _element_count(element_count) {
 		// Inicjalizacja lookup tables
 		_element_positions = new position_t[element_count];
@@ -144,7 +151,7 @@ public:
 #endif
 
 		// Redystrybucja elementów
-		while(_buckets[i].size() > 0) {
+		while(!_buckets[i].empty()) {
 			const element& el = _buckets[i].pop_back();
 			const key_t new_bucket = _find_bucket(el.key);
 			_buckets[new_bucket].push_back(el);
@@ -191,11 +198,18 @@ public:
 	 * @param old_key poprzedni priorytet dla elementu
 	 * @param new_key nowy priorytet dla elementu
 	 */
-	void change_priority(const value_t& item, const key_t new_key) {
+	void reduce_priority(const value_t& item, const key_t new_key) {
 		// Usuwanie elementu z kolejki
 		const key_t old_key = _current_priorities[item];
 		const key_t bucket_no = _find_bucket(old_key);
 		const position_t item_pos = _element_positions[item];
+		// Jeœli element pozostaje w tym kube³ku, to nie trzeba go przesuwaæ
+		if (bucket_no == _find_bucket(new_key)) {
+			_current_priorities[item] = new_key;
+			_buckets[bucket_no][item_pos].key = new_key;
+			_buckets_min[bucket_no] = element::min(_buckets_min[bucket_no], new_key);
+			return;
+		}
 		// 2 mo¿liwoœci - usuwamy z koñca kube³ka, b¹dŸ z jego œrodka
 		const element& last = _buckets[bucket_no].pop_back();
 		// Usuwamy ze œrodka - aktualizacja miejsca dla ostatniego elementu
@@ -267,7 +281,7 @@ private:
 	 * Numer kube³ka jest okreœlany przez najwy¿szy ustawiony bit
 	 * @param key klucz (priorytet) dla szukanego elementu
 	 */
-	key_t _find_bucket(const key_t key) {
+	key_t _find_bucket(const key_t key) const {
 		if (key == _last_deleted) return 0;
 #if USE_SSE4
 		key_t res = __lzcnt(key ^ _last_deleted);
@@ -295,7 +309,7 @@ private:
 		return least;
 	}
 
-#if CACHE_MIN
+#if CACHE_MIN && USE_LOOKUP_TABLES
 	/**
 	 * Szukanie nowego minimum dla okreœlonego kube³ka
 	 * Jeœli usuniêta wartoœæ nie by³a minimum w kube³ku, funkcja nic nie robi
