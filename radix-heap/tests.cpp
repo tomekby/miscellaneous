@@ -1,3 +1,4 @@
+#define BOOST_TEST_MODULE radix heap test suite
 #define BOOST_TEST_MAIN
 
 #include <boost/test/unit_test.hpp>
@@ -10,12 +11,7 @@ typedef std::pair<unsigned, unsigned> iipair;
 typedef std::vector<iipair> iiv;
 typedef std::vector<int> iv;
 
-// Sprawdzenie, czy elementy sπ w kolejnoúci rosnπcej
-// @todo: tam, gdzie jest to makro, "policzenie" rÍcznie kolejnoúci
-#define CHECK_ORDER() for (size_t i = 1; i < res.size(); ++i) { \
-	BOOST_TEST_CONTEXT("elementy " << res[i - 1].second << " " << res[i].second << " " << i) \
-	BOOST_TEST(res[i - 1].second <= res[i].second);\
-}
+// @todo: zmiana priorytetu dla elementu z ostatniego/przedostatniego miejsca w kube≥ku do innego kube≥ka
 
 /**
  * Testy z podstawowymi danymi
@@ -41,8 +37,7 @@ struct basic_fixture {
 		// 3 : ( 0, 7)
 		// 4 : ( 3,13) ( 4, 8) (11,11) (12,10) (13, 9)
 		// 5 : ( 7,23) ( 8,30) ( 9,16)
-		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57)
-		// 7 : (14,63)
+		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
 		/* dystrybucja po 2. POPie (last-deleted: 0 ? 7 ? 8): */
 		// 0 : -
 		// 1 : (13, 9)
@@ -50,21 +45,14 @@ struct basic_fixture {
 		// 3 : ( 3,13) 
 		// 4 : -
 		// 5 : ( 7,23) ( 8,30) ( 9,16)
-		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57)
-		// 7 : (14,63)
+		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
 
 		// Wrzucanie elementÛw do kolejki
 		heap = new rheap(0xFF);
 		std::for_each(n.begin(), n.end(), [&](auto i) { heap->push(i.first, i.second); });
 	}
 
-	// Redukcja kolejki
-	void _pop_all_from_heap() {
-		while(!heap->empty()) {
-			auto tmp = heap->pop();
-			res.emplace_back(tmp.value, tmp.key);
-		}
-	}
+	// Usuwanie wszystkich elementÛw z kolejki i wyciπgniÍcie kluczy
 	void _pop_keys_from_heap(int amount = 0) {
 		int i = 0;
 		while (!amount ? !heap->empty() : i++ < amount) {
@@ -80,9 +68,8 @@ struct basic_fixture {
 	}
 
 	// Elementy przechowywane jako para [wartoúÊ, klucz]
-	iiv n;
+	iiv n; // èrÛd≥owe dane
 	rheap *heap;
-	iiv res; // Rezultat z _pop_alll_from_heap()
 	iv keys_res; // Rezultat z _pop_keys_from_heap()
 };
 
@@ -181,8 +168,12 @@ BOOST_FIXTURE_TEST_CASE(Reduce_Prio_For_Min_After_Pop, basic_fixture)
 
 	// Sprawdzenie reszty kolejki
 	_pop_keys_from_heap();
+	// priorytety: 7,8,9,10,11,13,16,23,30,33,39,48,49,51,57,58,59,63
+	// posortowane wg. prio: v : 0 4 13 12 11  3  9  7  8 15 10 16  5  6 17  1  2 14
+	//						 k : 7 8 9  10 11 13 16 23 30 33 39 48 49 51 57 58 59 63
 	iv expected = { 9,9,11,13,16,23,30,33,39,48,49,51,57,58,59,63 };
 	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+	// @todo: czemu, do cholery, ten test nie przechodzi?!
 }
 
 // Redukcja priorytetu pozostawiajπc w tym samym kube≥ku po zdjÍciu czegoú
@@ -192,8 +183,11 @@ BOOST_FIXTURE_TEST_CASE(Reduce_Prio_Same_Bucket_After_Pop, basic_fixture)
 	heap->pop(); // Drugi pop, øeby mieÊ jakiú redystrybuowany kube≥ek
 	heap->reduce_priority(17, 50);
 	BOOST_CHECK_EQUAL(heap->size(), n.size() - 2);
-	_pop_all_from_heap();
-	CHECK_ORDER()
+
+	// Sprawdzenie reszty kolejki
+	_pop_keys_from_heap();
+	iv expected = { 9,10,11,13,16,23,30,33,39,48,49,50,51,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
 }
 
 // Redukcja priorytetu pozostawiajπc w tym samym kube≥ku (minimum z kube≥ka) po zdjÍciu czegoú
@@ -203,8 +197,11 @@ BOOST_FIXTURE_TEST_CASE(Reduce_Prio_Min_Same_Bucket_After_Pop, basic_fixture)
 	heap->pop(); // Drugi pop, øeby mieÊ jakiú redystrybuowany kube≥ek
 	heap->reduce_priority(15, 32);
 	BOOST_CHECK_EQUAL(heap->size(), n.size() - 2);
-	_pop_all_from_heap();
-	CHECK_ORDER()
+
+	// Sprawdzenie reszty kolejki
+	_pop_keys_from_heap();
+	iv expected = { 9,10,11,13,16,23,30,32,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
 }
 
 // Dodanie elementu po zdjÍciu czegoú
@@ -248,7 +245,7 @@ BOOST_AUTO_TEST_CASE(Push_100k)
 
 BOOST_AUTO_TEST_CASE(Push_Pop_100k)
 {
-	std::vector<unsigned> src, res;
+	iv src, res;
 	const int COUNT = 100 * 1000;
 	// Push
 	rheap heap(COUNT);
@@ -276,13 +273,13 @@ BOOST_AUTO_TEST_CASE(Push_50k_reverse)
 
 BOOST_AUTO_TEST_CASE(Push_Pop_50k_reverse)
 {
-	std::vector<unsigned> src, res;
+	iv src, res;
 	const int COUNT = 50*1000;
 	// Push
 	rheap heap(COUNT);
 	for (size_t i : boost::irange(0, COUNT)) {
 		heap.push(i, COUNT - i);
-		// priorytety bÍdπ ros≥y odwrotnie do i
+		// priorytety bÍdπ ros≥y odwrotnie do wartoúci i
 		src.emplace_back(COUNT - i - 1);
 	}
 	BOOST_CHECK_EQUAL(heap.size(), COUNT);
@@ -295,6 +292,63 @@ BOOST_AUTO_TEST_CASE(Push_Pop_50k_reverse)
 /**
  * Testy dla x elementÛw o tym samym priorytecie
  */
+struct recurring_fixture {
+	// Set up
+	recurring_fixture() {
+		BOOST_TEST_MESSAGE("set up recurring_fixture...");
+
+		// Liczby do wrzucenia do kolejki
+		unsigned x = 0;
+		//			  x :  0  1   2   3  4   5   6   7   8   9  10  11  12  13  14 
+		for (unsigned i : {7, 7, 13, 13, 8, 13, 11, 16, 30, 16, 39, 39, 39, 39, 63})
+			n.push_back(iipair(x++, i));
+
+		// priorytety: 7,7,13,13,8,13,11,16,30,16,39,39,39,39,63
+		// posortowane wg. prio: v : 0 1 4  6  2  3  5  7  9  8 10 11 12 13 14
+		//						 k : 7 7 8 11 13 13 13 16 16 30 39 39 39 39 63
+		/* poczπtkowo w kube≥kach (v,k): */ // @todo
+		// 0 : -
+		// 1 : -
+		// 2 : -
+		// 3 : ( 0, 7)
+		// 4 : ( 3,13) ( 4, 8) (11,11) (12,10) (13, 9)
+		// 5 : ( 7,23) ( 8,30) ( 9,16)
+		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
+		/* dystrybucja po 2. POPie (last-deleted: 0 ? 7 ? 8): */
+		// 0 : -
+		// 1 : (13, 9)
+		// 2 : (11,11) (12,10)
+		// 3 : ( 3,13) 
+		// 4 : -
+		// 5 : ( 7,23) ( 8,30) ( 9,16)
+		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
+
+		// Wrzucanie elementÛw do kolejki
+		heap = new rheap(0xFF);
+		std::for_each(n.begin(), n.end(), [&](auto i) { heap->push(i.first, i.second); });
+	}
+
+	// Usuwanie wszystkich elementÛw z kolejki i wyciπgniÍcie kluczy
+	void _pop_keys_from_heap(int amount = 0) {
+		int i = 0;
+		while (!amount ? !heap->empty() : i++ < amount) {
+			auto tmp = heap->pop();
+			keys_res.push_back(tmp.key);
+		}
+	}
+
+	// Tear down
+	~recurring_fixture() {
+		BOOST_TEST_MESSAGE("tear down recurring_fixture...");
+		delete heap;
+	}
+
+	// Elementy przechowywane jako para [wartoúÊ, klucz]
+	iiv n; // èrÛd≥owe dane
+	rheap *heap;
+	iv keys_res; // Rezultat z _pop_keys_from_heap()
+};
+
 /*
  * Coú dla in_heap()
  */

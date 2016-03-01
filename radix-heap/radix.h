@@ -135,6 +135,7 @@ public:
 	 * Zwraca najmniejszy element w kolejce
 	 */
 	element& pop() {
+		assert(_items_count > 0);
 		if (!_items_count) return element();
 		// Jeœli coœ jest w kube³ku #0 to jest to minimum
 		else if (!_buckets[0].empty()) return _remove_least();
@@ -205,6 +206,7 @@ public:
 		const key_t old_key = _current_priorities[item];
 		const key_t bucket_no = _find_bucket(old_key);
 		const position_t item_pos = _element_positions[item];
+		assert(new_key <= old_key);
 		// Jeœli element pozostaje w tym kube³ku, to nie trzeba go przesuwaæ
 		if (bucket_no == _find_bucket(new_key)) {
 			_current_priorities[item] = new_key;
@@ -300,6 +302,7 @@ private:
 	 * Zwraca najmniejszy element (wczeœniej umieszczony w kube³ku #0)
 	 */
 	element& _remove_least() {
+		assert(_items_count > 0);
 		// Zwrócenie elementu najmniejszego - zawsze w zerowym kube³ku
 		--_items_count;
 		element& least = _buckets[0].pop_back();

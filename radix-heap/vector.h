@@ -74,9 +74,6 @@ public:
 		_buffer = tmp;
 		_size = new_size;
 	}
-	void shrink_to_fit() {
-		if (_count < _size) reisze(_count);
-	}
 private:
 	// Bufor przechowuj¹cy dane
 	T *_buffer;
