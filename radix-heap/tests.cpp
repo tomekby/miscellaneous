@@ -72,6 +72,7 @@ struct basic_fixture {
 	rheap *heap;
 	iv keys_res; // Rezultat z _pop_keys_from_heap()
 };
+BOOST_AUTO_TEST_SUITE(Basic_Data_Suite)
 
 BOOST_FIXTURE_TEST_CASE(Push_Elements, basic_fixture)
 {
@@ -168,12 +169,8 @@ BOOST_FIXTURE_TEST_CASE(Reduce_Prio_For_Min_After_Pop, basic_fixture)
 
 	// Sprawdzenie reszty kolejki
 	_pop_keys_from_heap();
-	// priorytety: 7,8,9,10,11,13,16,23,30,33,39,48,49,51,57,58,59,63
-	// posortowane wg. prio: v : 0 4 13 12 11  3  9  7  8 15 10 16  5  6 17  1  2 14
-	//						 k : 7 8 9  10 11 13 16 23 30 33 39 48 49 51 57 58 59 63
 	iv expected = { 9,9,11,13,16,23,30,33,39,48,49,51,57,58,59,63 };
 	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
-	// @todo: czemu, do cholery, ten test nie przechodzi?!
 }
 
 // Redukcja priorytetu pozostawiaj¹c w tym samym kube³ku po zdjêciu czegoœ
@@ -229,7 +226,85 @@ BOOST_FIXTURE_TEST_CASE(Push_After_Pop, basic_fixture)
 
 	// Dodaliœmy 1 element, 3 usunêliœmy
 	BOOST_CHECK_EQUAL(heap->size(), n.size() - 2);
+	// @todo: reszta kolejki
 }
+
+// Zmiana priorytetu dla ostatniego elementu w kube³ku
+BOOST_FIXTURE_TEST_CASE(Change_Prio_Last_From_Bucket, basic_fixture)
+{
+	heap->reduce_priority(13,8);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 7,8,8,10,11,13,16,23,30,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+// Zmiana priorytetu dla ostatniego elementu w kube³ku po zdjêciu czegoœ
+BOOST_FIXTURE_TEST_CASE(Change_Prio_Last_Bucket_After_Pop, basic_fixture)
+{
+	heap->pop();
+	heap->reduce_priority(13, 8);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 8,8,10,11,13,16,23,30,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+// Zmiana priorytetu dla ostatniego elementu w kube³ku po redystrybucji
+BOOST_FIXTURE_TEST_CASE(Change_Prio_Last_Bucket_After_Redist, basic_fixture)
+{
+	heap->pop();
+	heap->pop();
+	heap->reduce_priority(12, 9);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 9,9,11,13,16,23,30,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+// priorytety: 7,8,9,10,11,13,16,23,30,33,39,48,49,51,57,58,59,63
+// Zmiana priorytetu dla przedostatniego elementu w kube³ku
+BOOST_FIXTURE_TEST_CASE(Change_Prio_Last1_From_Bucket, basic_fixture)
+{
+	heap->reduce_priority(8, 15);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 7,8,9,10,11,13,15,16,23,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+// Zmiana priorytetu dla przedostatniego elementu w kube³ku po zdjêciu czegoœ
+BOOST_FIXTURE_TEST_CASE(Change_Last1_Bucket_After_Pop, basic_fixture)
+{
+	heap->pop();
+	heap->reduce_priority(8, 15);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 8,9,10,11,13,15,16,23,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+// Zmiana priorytetu dla przedostatniego elementu w kube³ku po redystrybucji
+BOOST_FIXTURE_TEST_CASE(Change_Last1_Bucket_After_Redist, basic_fixture)
+{
+	heap->pop();
+	heap->pop();
+	heap->reduce_priority(8, 20);
+
+	// Sprawdzenie kolejki
+	_pop_keys_from_heap();
+	iv expected = { 9,10,11,13,16,20,23,33,39,48,49,51,57,58,59,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+///////////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_SUITE(Big_Data_Suite)
 
 /**
  * Operacje na du¿ej iloœci danych
@@ -288,6 +363,10 @@ BOOST_AUTO_TEST_CASE(Push_Pop_50k_reverse)
 	while (!heap.empty()) res.emplace_back(heap.pop().value);
 	BOOST_TEST(src == res);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+///////////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_SUITE(Same_Priorities_Suite)
 
 /**
  * Testy dla x elementów o tym samym priorytecie
@@ -348,6 +427,7 @@ struct recurring_fixture {
 	rheap *heap;
 	iv keys_res; // Rezultat z _pop_keys_from_heap()
 };
+BOOST_AUTO_TEST_SUITE_END()
 
 /*
  * Coœ dla in_heap()
