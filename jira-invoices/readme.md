@@ -10,7 +10,7 @@ Uruchamianie:
 - skrypt start.bat
     - zakłada, że python jest zainstalowany w c:\tools\python3 a scrapy jest zainstalowany globalnie
     - zakłada, że wkhtmltopdf jest zainstalowany w C:\tools\wkhtmltopdf  
-    jeśli ww. ścieżki należy je zmienić w ustawianiu zmiennej %path%
+    jeśli ww. ścieżki są inne, należy je zmienić w ustawianiu zmiennej %path%
 
 Konfiguracja:
 - jira-timesheet
