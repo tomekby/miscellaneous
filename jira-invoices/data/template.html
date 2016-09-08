@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <div class="container" style="width: 800px;">
+        <div class="row">
+            <p>
+                {{ person_name }}, {{ address }}<br>
+                {{ PESEL }}
+            </p>
+            <br><br>
+            <h4 class="text-center">Rachunek z dnia {{ today_date }}&nbsp;r.</h4>
+            <br><br>
+            <p>Wystawił dla {{ paymaster }} </p>
+            <br>
+            <p>{{ what }} zgodnie <span class="text-nowrap">z umową z dnia {{ agreement_date }} r.</span></p>
+            <br>
+        </div>
+        <div class="row">
+            <table class="table" style="width: 80%;">
+                <tr>
+                    <td>1. </td>
+                    <td>Kwota brutto: </td>
+                    <td class="text-right">{{ gross }} zł</td>
+                </tr>
+                <tr>
+                    <td>2. </td>
+                    <td>Koszty uzyskania przychodu {{ percentage }}</td>
+                    <td class="text-right">{{ cost }} zł</td>
+                </tr>
+                <tr>
+                    <td>3. </td>
+                    <td>Podstawa opodatkowania: </td>
+                    <td class="text-right">{{ tax_base }} zł</td>
+                </tr>
+                <tr>
+                    <td>4. </td>
+                    <td>Naliczony podatek 18%:</td>
+                    <td class="text-right">{{ tax }} zł</td>
+                </tr>
+                <tr>
+                    <td>5. </td>
+                    <td>Do wypłaty:</td>
+                    <td class="text-right">{{ net }} zł</td>
+                </tr>
+            </table>
+            <br>
+            <p class="text-center">(słownie:  {{ net_string }} zł  00/100)</p>
+        </div>
+        <div class="row" style="margin-top: 70px;">
+            <div class="col-xs-3 col-xs-offset-9">
+                <p>................................................</p>
+                <p class="text-center" style="margin-top: -10px;">podpis Wykonawcy</p>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 40px;">
+            <div class="col-xs-6">
+                <p>Praca została wykonana i przyjęta bez zastrzeżeń</p>
+                <p>dnia ................................................</p>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 50px;">
+            <div class="col-xs-6 col-xs-offset-1">
+                <p>................................................</p>
+                <p style="margin-top: -10px;">pieczęć i podpis Zamawiającego</p>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 30px;">
+            <p>Kwotę w wysokości {{ net }} zł (słownie: {{ net_string }} zł  00/100) proszę przekazać na konto: <span class="text-nowrap">{{ bank_number }}</span></p>
+        </div>
+        <div class="row" style="margin-top: 50px;">
+            <div class="col-xs-3 col-xs-offset-8">
+                <p>...................................................................................</p>
+                <p class="text-center" style="margin-top: -10px;">data i podpis Wykonawcy</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

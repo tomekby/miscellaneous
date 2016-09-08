@@ -1,0 +1,42 @@
+{
+    "jira-url": "Adres strony logowanie do JIRy",
+    "jira-timesheet": {
+        "url": "secure/TempoUserBoard!timesheetPrint.jspa",
+        "params": "v=1&filterIds=-1001&periodType=FLEX&periodView=DATES&from={date_from}&to={date_to}",
+        "month_from": 7
+    },
+    "jira-login": {
+        "username": "nazwa użytkownika",
+        "password": "hasło do konta"
+    },
+    "invoice-data": {
+        "person_name": "Imię i nazwisko",
+        "address": "Ulica, kod pocztowy, miasto",
+        "PESEL": "Numer PESEL",
+        "bank_number": "Numer konta do przelewu",
+        "agreement_date": "01.01.1970",
+        "paymaster": "Nazwa i adres zleceniodawcy"
+    },
+    "calculator": {
+        "wage": 1,
+        "amount-on-50%": 90,
+        "amount-on-20%": 10,
+        "default": "WebCalculator",
+        "fallback": "Student",
+        "web-bot": "WfirmaPlBot"
+    },
+    "wfirma.pl": {
+        "quota_type": "netto",
+        "tax_treshold": "first",
+        "lump_tax": 0,
+        "schema": 1,
+        "retiring": 0,
+        "rent": 0,
+        "sickness": 0,
+        "incidental": 0,
+        "health": 0,
+        "labor_fund": 0,
+        "labor_guarant_fund": 0,
+        "company_incidental": 1.8
+    }
+}
