@@ -113,12 +113,12 @@ class WfirmaPlBot:
             try:
                 request = c.post(WfirmaPlBot._url, data=data, timeout=3)
             except:
-                print('Timeout')
+                print('Przekroczono maksymalny czas oczekiwania na odpowiedź serwera')
                 return None
 
             # There was some error (most likely server-side), so use offline fallback
             if request.status_code != codes.ok:
-                print('Web bot failure')
+                print('Wystąpił błąd podczas pobierania danych do rachunku')
                 return None
                 
             return WfirmaPlBot._parse_results(request.text)

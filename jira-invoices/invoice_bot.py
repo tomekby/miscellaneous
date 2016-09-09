@@ -12,18 +12,14 @@ class JiraSpider(scrapy.Spider):
     def parse(self, response):
         print('Pobieranie danych o ilości przepracowanych godzin...')
     
-        return [FormRequest.from_response(response, formdata=Config.get('jira-login'), callback=self.after_login)]
+        return [FormRequest.from_response(response, formdata=Config.get('jira-login'),
+            callback=self.after_login, errback=self.login_failure)]
+        
+    def login_failure(self, failure):
+        print("Nie udało się zalogować")
 
-    # Check if login succeeded and, if yes, go to timesheet page
+    # If login succeeded go to timesheet page
     def after_login(self, response):
-        # check login succeed before going on
-        # todo aint working
-        if response.css('div.aui-message.error'):
-            self.log("Login failed", level=log.ERROR)
-            print("Login failed")
-            return
-
-        # login successful - move to timesheet
         uri = '%s?%s' % (Config.get('jira-timesheet')['url'], Config.get_uri_params())
         return scrapy.Request(response.urljoin(uri), self.parse_hours)
 
