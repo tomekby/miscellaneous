@@ -91,17 +91,7 @@ int main()
 	std::sort(test.begin(), test.end());
 #endif
 #else
-	iiv n;
-	int x = 0;
-			   // x :  0   1   2   3  4   5   6   7   8   9  10  11  12  13 14  15  16  17
-	for (unsigned i : {7, 58, 59, 13, 8, 49, 51, 23, 30, 16, 39, 11, 10, 9, 63, 33, 48, 57})
-		n.push_back(iipair(x++, i));
-	rheap heap(0xff);
-	std::for_each(n.begin(), n.end(), [&](auto i) { heap.push(i.first, i.second); });
-	heap.pop();
-	heap.reduce_priority(7, 20);
-	heap.dump();
-
+	printf("%d", __lzcnt(8 ^ 11) + 1);
 #endif
 	 
 	return 0;

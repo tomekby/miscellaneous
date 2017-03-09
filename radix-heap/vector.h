@@ -62,6 +62,9 @@ public:
 		assert(_count > 0);
 		return _buffer[--_count];
 	}
+	T& back() {
+		return _buffer[_count - 1];
+	}
 	// Resize bufora do odpowiedniego rozmiaru
 	void resize(size_t new_size) {
 		if (new_size <= _INIT_SIZE) new_size = _INIT_SIZE;
@@ -74,7 +77,7 @@ public:
 		_buffer = tmp;
 		_size = new_size;
 	}
-private:
+protected:
 	// Bufor przechowuj¹cy dane
 	T *_buffer;
 	// Wielkoœæ bufora
@@ -84,6 +87,7 @@ private:
 	const static size_t _GROWTH_FACTOR = 2;
 	const static size_t _INIT_SIZE = 10;
 };
+
 
 namespace std {
 	// Specjalizacja swap dla wektora

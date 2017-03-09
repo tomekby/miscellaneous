@@ -11,63 +11,65 @@
  * unikalnych wartoœci (przez u¿ycie trywialnej funkcji hashuj¹cej)
  */
 #ifndef USE_LOOKUP_TABLES
-	#define USE_LOOKUP_TABLES 1
+#define USE_LOOKUP_TABLES 1
 #endif
-/**
- * Czy u¿ywaæ __lzcnt() wymagaj¹cego obs³ugi SSE4 przez procesor
- * Jeœli 0, bêdzie u¿yte nieznacznie wolniejsze _BitScanReverse()
- */
+ /**
+  * Czy u¿ywaæ __lzcnt() wymagaj¹cego obs³ugi SSE4 przez procesor
+  * Jeœli 0, bêdzie u¿yte nieznacznie wolniejsze _BitScanReverse()
+  */
 #ifndef USE_SSE4
-	#define USE_SSE4 1
+#define USE_SSE4 1
 #endif
-/**
- * Czy Szukanie minimum w kube³ku ma siê odbywaæ przy ka¿dej operacji (bêdzie cachowane dla pop()),
- * czy tylko w pop()
- * Przy pewnych danych wy³¹czenie mo¿e przyspieszyæ, m.in. gdy jest wiele pesymistycznych przypadków
- * reduce_priority (przenosimy minimum do innego kube³ka)
- * Wy³¹czenie gdy USE_LOOKUP_TABLES == 0 nie ma sensu, bo oszczêdzi niewiele pamiêci a spowolni pop()
- */
+  /**
+   * Czy Szukanie minimum w kube³ku ma siê odbywaæ przy ka¿dej operacji (bêdzie cachowane dla pop()),
+   * czy tylko w pop()
+   * Przy pewnych danych wy³¹czenie mo¿e przyspieszyæ, m.in. gdy jest wiele pesymistycznych przypadków
+   * reduce_priority (przenosimy minimum do innego kube³ka)
+   * Wy³¹czenie gdy USE_LOOKUP_TABLES == 0 nie ma sensu, bo oszczêdzi niewiele pamiêci a spowolni pop()
+   */
 #ifndef CACHE_MIN
-	#define CACHE_MIN 1
+#define CACHE_MIN 1
 #endif
 
-/**
- * Radix heap - "kopiec kube³kowy"
- * Dzia³a zak³adaj¹c, ¿e priorytet jest liczb¹ ca³kowit¹ >= 0
- * Pozwala na implementacjê alg. Dijkstry o z³o¿onoœci ~O(m+n*logC)
- * Przy okazji jest znacznie prostszy w implementacji ni¿ np. Kopiec Fibonacciego
- * Wersja wykorzystuj¹ca lookup table (USE_LOOKUP_TABLES = 1) dzia³a tylko jeœli value_t
- * jest liczb¹ ca³kowit¹ ca³kowit¹ (np. numer wierzcho³ka w alg. Dijkstry).
- *
- * Testy jednostkowe, ³¹cznie 20+ z u¿yciem boost::test potwierdzaj¹ poprawnoœæ dzia³ania
- *
- * Ww. dyrektywy u¿ywane s¹ do warunkowej kompilacji kodu dziêki czemu mo¿na go dostosowaæ
- * w zale¿noœci od wymagañ (zu¿ycie pamiêci/szybkoœæ). W³¹czenie obu rodzajów cache mo¿e
- * znacznie przyspieszyæ dzia³anie kodu, ALE powoduje zu¿ycie ~40% wiêcej pamiêci
- *
- * Ta implementacja wykorzystuje vectory zamiast list poniewa¿:
- * - vector zajmuje zauwa¿alnie mniej pamiêci (wielkoœæ jest regulowana automatycznie)
- * - tablica jest przechowywana w sposób ci¹g³y, co znacznie zmniejsza czas dostêpu do danych
- * - u¿ywane operacje dodawania/usuwania elementów wykonuj¹ siê w czasie O(1) - push_back/pop_back
- * - okrojony vector w tej implementacji jest znacznie szybszy od std::vector (push_back/emplace_back)
- * - testy wg. Visuala: http://ideone.com/wxwrwg
- * 
- * Implementowane na podstawie:
- * - http://ssp.impulsetrain.com/radix-heap.html
- * Pomys³ stworzenia lookup table dla redukcji priorytetu zaczerpniêty st¹d:
- * - http://www.cosc.canterbury.ac.nz/tad.takaoka/alg/spalgs/radixheap.txt
- * Czas dzia³ania wg.:
- * - http://ocw.mit.edu/courses/sloan-school-of-management/15-082j-network-optimization-fall-2010/lecture-notes/MIT15_082JF10_lec06.pdf
- *
- * Autor: Tomasz Stasiak
- */
+   /**
+	* Radix heap - "kopiec kube³kowy"
+	* Dzia³a zak³adaj¹c, ¿e priorytet jest liczb¹ ca³kowit¹ >= 0
+	* Pozwala na implementacjê alg. Dijkstry o z³o¿onoœci ~O(m+n*logC)
+	* Przy okazji jest znacznie prostszy w implementacji ni¿ np. Kopiec Fibonacciego
+	* Wersja wykorzystuj¹ca lookup table (USE_LOOKUP_TABLES = 1) dzia³a tylko jeœli value_t
+	* jest liczb¹ ca³kowit¹ ca³kowit¹ (np. numer wierzcho³ka w alg. Dijkstry).
+	*
+	* Testy jednostkowe, ³¹cznie 20+ z u¿yciem boost::test potwierdzaj¹ poprawnoœæ dzia³ania
+	*
+	* Ww. dyrektywy u¿ywane s¹ do warunkowej kompilacji kodu dziêki czemu mo¿na go dostosowaæ
+	* w zale¿noœci od wymagañ (zu¿ycie pamiêci/szybkoœæ). W³¹czenie obu rodzajów cache mo¿e
+	* znacznie przyspieszyæ dzia³anie kodu, ALE powoduje zu¿ycie ~40% wiêcej pamiêci
+	*
+	* Ta implementacja wykorzystuje vectory zamiast list poniewa¿:
+	* - vector zajmuje zauwa¿alnie mniej pamiêci (wielkoœæ jest regulowana automatycznie)
+	* - tablica jest przechowywana w sposób ci¹g³y, co znacznie zmniejsza czas dostêpu do danych
+	* - u¿ywane operacje dodawania/usuwania elementów wykonuj¹ siê w czasie O(1) - push_back/pop_back
+	* - okrojony vector w tej implementacji jest znacznie szybszy od std::vector (push_back/emplace_back)
+	* - testy wg. Visuala: http://ideone.com/wxwrwg
+	*
+	* Implementowane na podstawie:
+	* - http://ssp.impulsetrain.com/radix-heap.html
+	* Pomys³ stworzenia lookup table dla redukcji priorytetu zaczerpniêty st¹d:
+	* - http://www.cosc.canterbury.ac.nz/tad.takaoka/alg/spalgs/radixheap.txt
+	* Czas dzia³ania wg.:
+	* - http://ocw.mit.edu/courses/sloan-school-of-management/15-082j-network-optimization-fall-2010/lecture-notes/MIT15_082JF10_lec06.pdf
+	*
+	* Autor: Tomasz Stasiak
+	*/
 template <class value_t, class key_t>
 class RadixHeap {
 public:
 	// Struktura przechowuj¹ca element kolejki
 	struct element {
 		element() : value(value_t()), key(0) {}
+
 		element(const value_t& value, const key_t key) : value(value), key(key) {}
+
 		value_t value;
 		key_t key;
 
@@ -75,6 +77,7 @@ public:
 			return (a < b) ? a : b;
 		}
 	};
+
 	// Typ okreœlaj¹cy poszczególne kube³ki
 	typedef vector<element> bucket_t;
 #if USE_LOOKUP_TABLES
@@ -88,8 +91,9 @@ public:
 	 * @param element_count maksymalna iloœæ elementów (np. wierzcho³ków) przechowywanych w kopcu
 	 */
 #if USE_LOOKUP_TABLES
-	RadixHeap() : _element_count(0) {}
-	RadixHeap(const position_t element_count) : _element_count(element_count) {
+	RadixHeap() : _items_count(0), _element_count(0) {}
+
+	explicit RadixHeap(const position_t element_count) : _element_count(element_count) {
 		// Inicjalizacja lookup tables
 		_element_positions = new position_t[element_count];
 		_current_priorities = new key_t[element_count];
@@ -154,7 +158,7 @@ public:
 #endif
 
 		// Redystrybucja elementów
-		while(!_buckets[i].empty()) {
+		while (!_buckets[i].empty()) {
 			const element& el = _buckets[i].pop_back();
 			const key_t new_bucket = _find_bucket(el.key);
 			_buckets[new_bucket].push_back(el);
@@ -211,7 +215,9 @@ public:
 		if (bucket_no == _find_bucket(new_key)) {
 			_current_priorities[item] = new_key;
 			_buckets[bucket_no][item_pos].key = new_key;
+#if CACHE_MIN
 			_buckets_min[bucket_no] = element::min(_buckets_min[bucket_no], new_key);
+#endif
 			return;
 		}
 		// 2 mo¿liwoœci - usuwamy z koñca kube³ka, b¹dŸ z jego œrodka
@@ -260,23 +266,23 @@ public:
 #else
 		printf("zawartosc kolejki (priorytet, wartosc):\n")
 #endif
-		for (key_t i = 0; i < _buckets_no; ++i) {
-			printf("#%d\t", i);
+			for (key_t i = 0; i < _buckets_no; ++i) {
+				printf("#%d\t", i);
 #if CACHE_MIN
-			if (_buckets_min[i] == NON_EXISTING_KEY) {
-				printf("pusto\n");
-				continue;
-			}
+				if (_buckets_min[i] == NON_EXISTING_KEY) {
+					printf("pusto\n");
+					continue;
+				}
 #endif
-			for (position_t j = 0; j < _buckets[i].size(); ++j) {
+				for (position_t j = 0; j < _buckets[i].size(); ++j) {
 #if USE_LOOKUP_TABLES
-				printf("(%d, %d, %d), ", _buckets[i][j].key, _buckets[i][j].value, _element_positions[_buckets[i][j].value]);
+					printf("(%d, %d, %d), ", _buckets[i][j].key, _buckets[i][j].value, _element_positions[_buckets[i][j].value]);
 #else
-				printf("(%d, %d), ", _buckets[i][j].key, _buckets[i][j].value);
+					printf("(%d, %d), ", _buckets[i][j].key, _buckets[i][j].value);
 #endif
+				}
+				printf("\n");
 			}
-			printf("\n");
-		}
 		printf("\n");
 	}
 

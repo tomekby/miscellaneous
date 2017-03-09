@@ -115,7 +115,7 @@ namespace radix {
 		class key_t = unsigned,
 		class bucket_t = std::vector<std::pair<value_t, key_t>>
 	>
-	class lookup_queue : queue<value_t, key_t, bucket_t> {
+	class lookup_queue : public queue<value_t, key_t, bucket_t> {
 		typedef queue<value_t, key_t, bucket_t> parent_t;
 		typedef std::pair<size_t, key_t> _pos_prio_t;
 		typedef typename parent_t::element_t element_t;

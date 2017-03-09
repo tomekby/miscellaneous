@@ -11,8 +11,6 @@ typedef std::pair<unsigned, unsigned> iipair;
 typedef std::vector<iipair> iiv;
 typedef std::vector<int> iv;
 
-// @todo: zmiana priorytetu dla elementu z ostatniego/przedostatniego miejsca w kube³ku do innego kube³ka
-
 /**
  * Testy z podstawowymi danymi
  */
@@ -38,7 +36,7 @@ struct basic_fixture {
 		// 4 : ( 3,13) ( 4, 8) (11,11) (12,10) (13, 9)
 		// 5 : ( 7,23) ( 8,30) ( 9,16)
 		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
-		/* dystrybucja po 2. POPie (last-deleted: 0 ? 7 ? 8): */
+		/* dystrybucja po 2. POPie (last-deleted: 0 -> 7 -> 8): */
 		// 0 : -
 		// 1 : (13, 9)
 		// 2 : (11,11) (12,10)
@@ -72,7 +70,7 @@ struct basic_fixture {
 	rheap *heap;
 	iv keys_res; // Rezultat z _pop_keys_from_heap()
 };
-BOOST_AUTO_TEST_SUITE(Basic_Data_Suite)
+BOOST_AUTO_TEST_SUITE(Basic_Data)
 
 BOOST_FIXTURE_TEST_CASE(Push_Elements, basic_fixture)
 {
@@ -304,7 +302,7 @@ BOOST_FIXTURE_TEST_CASE(Change_Last1_Bucket_After_Redist, basic_fixture)
 
 BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_SUITE(Big_Data_Suite)
+BOOST_AUTO_TEST_SUITE(Big_Data)
 
 /**
  * Operacje na du¿ej iloœci danych
@@ -366,7 +364,7 @@ BOOST_AUTO_TEST_CASE(Push_Pop_50k_reverse)
 
 BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_SUITE(Same_Priorities_Suite)
+BOOST_AUTO_TEST_SUITE(Same_Priorities)
 
 /**
  * Testy dla x elementów o tym samym priorytecie
@@ -382,22 +380,22 @@ struct recurring_fixture {
 		for (unsigned i : {7, 7, 13, 13, 8, 13, 11, 16, 30, 16, 39, 39, 39, 39, 63})
 			n.push_back(iipair(x++, i));
 
-		// priorytety: 7,7,13,13,8,13,11,16,30,16,39,39,39,39,63
+		// priorytety: 7,7,8,11,13,13,13,16,16,30,39,39,39,39,63
 		// posortowane wg. prio: v : 0 1 4  6  2  3  5  7  9  8 10 11 12 13 14
 		//						 k : 7 7 8 11 13 13 13 16 16 30 39 39 39 39 63
-		/* pocz¹tkowo w kube³kach (v,k): */ // @todo
+		/* pocz¹tkowo w kube³kach (v,k): */
 		// 0 : -
 		// 1 : -
 		// 2 : -
-		// 3 : ( 0, 7)
-		// 4 : ( 3,13) ( 4, 8) (11,11) (12,10) (13, 9)
-		// 5 : ( 7,23) ( 8,30) ( 9,16)
-		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
-		/* dystrybucja po 2. POPie (last-deleted: 0 ? 7 ? 8): */
+		// 3 : ( 0, 7) ( 1, 7)
+		// 4 : ( 2,13) ( 3,13) ( 4,8) ( 5,13) ( 6,11)
+		// 5 : ( 7,16) ( 8,30) ( 9,16)
+		// 6 : (10,39) (11,39) (12,39) (13,39) (14,63)
+		/* dystrybucja po 3. POPie (last-deleted: 0 -> 7 -> 7 -> 8): */
 		// 0 : -
-		// 1 : (13, 9)
-		// 2 : (11,11) (12,10)
-		// 3 : ( 3,13) 
+		// 1 : -
+		// 2 : ( 6,11)
+		// 3 : ( 5,13) ( 3,13), ( 2,13)
 		// 4 : -
 		// 5 : ( 7,23) ( 8,30) ( 9,16)
 		// 6 : ( 1,58) ( 2,59) ( 5,49) ( 6,51) (10,39) (15,33) (16,48) (17,57) (14,63)
@@ -415,6 +413,10 @@ struct recurring_fixture {
 			keys_res.push_back(tmp.key);
 		}
 	}
+	// zdejmowanie z kolejki ¿eby by³a redystrybucja
+	void pop_to_redistribute() {
+		for (int i = 0; i < 3; ++i) heap->pop();
+	}
 
 	// Tear down
 	~recurring_fixture() {
@@ -427,8 +429,34 @@ struct recurring_fixture {
 	rheap *heap;
 	iv keys_res; // Rezultat z _pop_keys_from_heap()
 };
-BOOST_AUTO_TEST_SUITE_END()
 
-/*
- * Coœ dla in_heap()
- */
+BOOST_FIXTURE_TEST_CASE(Push_Elements, recurring_fixture)
+{
+	BOOST_CHECK_EQUAL(heap->size(), n.size());
+}
+
+BOOST_FIXTURE_TEST_CASE(Pop_Elements, recurring_fixture)
+{
+	// Operacje
+	_pop_keys_from_heap(n.size());
+
+	// Kolejka powinna byæ pusta
+	BOOST_CHECK_EQUAL(heap->size(), 0);
+	// Sprawdzenie czy kolejnoœæ jest ok
+	iv expected = { 7,7,8,11,13,13,13,16,16,30,39,39,39,39,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+BOOST_FIXTURE_TEST_CASE(Reduce_Priority, recurring_fixture)
+{
+	heap->reduce_priority(8, 15);
+	BOOST_CHECK_EQUAL(heap->size(), n.size());
+
+	// Sprawdzenie reszty kolejki
+	_pop_keys_from_heap();
+	iv expected = { 7,7,8,11,13,13,13,15,16,16,39,39,39,39,63 };
+	BOOST_TEST(expected == keys_res, boost::test_tools::per_element());
+}
+
+
+BOOST_AUTO_TEST_SUITE_END()
