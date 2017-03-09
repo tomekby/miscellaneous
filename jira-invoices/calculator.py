@@ -139,3 +139,58 @@ class WfirmaPlBot:
         for i in range(0, 7):
             result[column_names[i]] = interesting_columns[i]
         return result
+
+
+# @todo nie można ustalić kosztów uzyskania
+class KalkulatoryNfBot:
+    _url = 'http://kalkulatory.nf.pl/kalkulator/wynagrodzenie/zlecenie'
+
+    # Send needed data
+    @staticmethod
+    def parse(net, copyright):
+        return None
+
+        from tools import Config
+
+        form_data = Config.get('kalkulatory.nf.pl')
+        form_data = {**form_data, **{
+            'stawka': 'net',
+            'kwota': net,
+            '_method': 'POST',
+        }}
+
+        with session() as c:
+            # Fix data format
+            data = {}
+            for k, v in form_data.items():
+                data['data[Calculator][%s]' % k] = v
+            # Try to make a request
+            try:
+                request = c.post(KalkulatoryNfBot._url, data=data, timeout=3)
+            except:
+                print('Przekroczono maksymalny czas oczekiwania na odpowiedź serwera')
+                return None
+
+            # There was some error (most likely server-side), so use offline fallback
+            if request.status_code != codes.ok:
+                print('Wystąpił błąd podczas pobierania danych do rachunku')
+                return None
+                
+            return KalkulatoryNfBot._parse_results(request.text)
+
+    # Parse data returned on request
+    @staticmethod
+    def _parse_results(request_body):
+        # extract wanted data
+        soup = BeautifulSoup(request_body)
+        table = soup.select('div.calc-body.clr')[0].find_next_sibling().findAll('td')[4:]
+        del table[3:7] # remove unneded
+        table = list(map(lambda x: float(x.get_text().replace(' zł', '').replace(' ', '').replace(',', '.')), table))
+        column_names = [
+            'cost', 'tax_base', 'tax', 'gross', 'net'
+        ]
+        result = {}
+        for i in range(0, 5):
+            result[column_names[i]] = table[i]
+        return result
+
