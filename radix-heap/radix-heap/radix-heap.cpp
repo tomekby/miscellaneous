@@ -1,6 +1,7 @@
 // radix-heap.cpp : Defines the entry point for the console application.
 //
 
+#define USE_ABM_LZCNT 0
 #include "stdafx.h"
 #include "vector.h"
 #include "radix.h"

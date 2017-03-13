@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE radix heap test suite
 #define BOOST_TEST_MAIN
 
+#define USE_ABM_LZCNT 0
+
 #include <boost/test/unit_test.hpp>
 #include <boost/range/irange.hpp>
 #include <vector>

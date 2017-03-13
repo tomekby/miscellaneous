@@ -36,13 +36,13 @@ public:
 			_buffer[i] = value;
 	}
 	// Gettery
-	inline T& operator[](const size_t pos) {
+    T& operator[](const size_t pos) {
 		return _buffer[pos];
 	}
 	// Objêtoœæ
-	const bool empty() const { return _count == 0; }
-	const size_t size() const { return _count; }
-	const size_t capacity() const { return _size; }
+    bool empty() const { return _count == 0; }
+    size_t size() const { return _count; }
+    size_t capacity() const { return _size; }
 	// Modyfikatory
 	void clear() {
 		delete[] _buffer;

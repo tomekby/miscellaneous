@@ -16,9 +16,10 @@
  /**
   * Czy u¿ywaæ __lzcnt() wymagaj¹cego obs³ugi SSE4 przez procesor
   * Jeœli 0, bêdzie u¿yte nieznacznie wolniejsze _BitScanReverse()
+  * Jeœli CPU nie obs³uguje ABM wyst¹pi undefined behaviour
   */
-#ifndef USE_SSE4
-#define USE_SSE4 1
+#ifndef USE_ABM_LZCNT
+#define USE_ABM_LZCNT 1
 #endif
   /**
    * Czy Szukanie minimum w kube³ku ma siê odbywaæ przy ka¿dej operacji (bêdzie cachowane dla pop()),
@@ -142,7 +143,7 @@ public:
 		assert(_items_count > 0);
 		if (!_items_count) return element();
 		// Jeœli coœ jest w kube³ku #0 to jest to minimum
-		else if (!_buckets[0].empty()) return _remove_least();
+		if (!_buckets[0].empty()) return _remove_least();
 
 		// Szukanie pierwszego, niepustego kube³ka
 		size_t i = 0;
@@ -202,7 +203,6 @@ public:
 	 * Zmiana priorytetu elementu bêd¹cego ju¿ w kolejce
 	 *
 	 * @param item wartoœæ dla której ma byæ zmieniony priorytet
-	 * @param old_key poprzedni priorytet dla elementu
 	 * @param new_key nowy priorytet dla elementu
 	 */
 	void reduce_priority(const value_t& item, const key_t new_key) {
@@ -293,7 +293,7 @@ private:
 	 */
 	key_t _find_bucket(const key_t key) const {
 		if (key == _last_deleted) return 0;
-#if USE_SSE4
+#if USE_ABM_LZCNT
 		key_t res = __lzcnt(key ^ _last_deleted);
 #else
 		unsigned long res;
