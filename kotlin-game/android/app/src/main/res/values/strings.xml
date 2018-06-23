@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Jak szybko umiesz liczyć?</string>
+    <string name="password">Hasło</string>
+    <string name="username">Nazwa użytkownika</string>
+    <string name="bestScores">Najlepsze wyniki:</string>
+    <string name="backToLogin">Wróć do logowania</string>
+</resources>
