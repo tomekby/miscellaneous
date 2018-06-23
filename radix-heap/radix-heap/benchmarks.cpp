@@ -1,5 +1,7 @@
+#define CACHE_MIN 0
 #include <benchmark/benchmark_api.h>
 #include "radix.h"
+#include "dheap.h"
 #include <ctime>
 #include <array>
 #include <chrono>
@@ -22,7 +24,7 @@ unsigned* getRandomInts(const unsigned count)
     return res;
 }
 
-void HeapPush(benchmark::State& state) {
+void RHeapPush(benchmark::State& state) {
     auto ints = getRandomInts(state.range(0));
 
     while (state.KeepRunning()) {
@@ -39,9 +41,9 @@ void HeapPush(benchmark::State& state) {
     state.SetComplexityN(state.iterations() * state.range(0));
     state.SetItemsProcessed(state.iterations() * state.range(0));
 }
-BENCHMARK(HeapPush)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+BENCHMARK(RHeapPush)->Range(64, 8 << 16)->UseManualTime()->Complexity();
 
-void HeapPop(benchmark::State& state) {
+void RHeapPop(benchmark::State& state) {
     auto ints = getRandomInts(state.range(0));
 
     while(state.KeepRunning()) {
@@ -60,9 +62,9 @@ void HeapPop(benchmark::State& state) {
     state.SetComplexityN(state.iterations() * state.range(0));
     state.SetItemsProcessed(state.iterations() * state.range(0));
 }
-BENCHMARK(HeapPop)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+BENCHMARK(RHeapPop)->Range(64, 8 << 16)->UseManualTime()->Complexity();
 
-void HeapReducePriority(benchmark::State& state) {
+void RHeapReducePriority(benchmark::State& state) {
     auto values = getRandomInts(state.range(0));
     auto minimum = std::numeric_limits<unsigned>::max();
     for (auto i = 0; i < state.range(0); ++i)
@@ -89,6 +91,45 @@ void HeapReducePriority(benchmark::State& state) {
     state.SetComplexityN(processed);
     state.SetItemsProcessed(processed);
 }
-BENCHMARK(HeapReducePriority)->Range(64, 8 << 18)->UseManualTime()->Complexity();
+BENCHMARK(RHeapReducePriority)->Range(64, 8 << 18)->UseManualTime()->Complexity();
+
+
+/**
+ * D-ary heap for comparision
+ */
+template<class Q>
+void DHeapReducePriority(benchmark::State& state) {
+    auto values = getRandomInts(state.range(0));
+    auto minimum = std::numeric_limits<unsigned>::max();
+    for (auto i = 0; i < state.range(0); ++i)
+        minimum = values[i] < minimum ? values[i] : minimum;
+
+    auto processed = 0;
+    while (state.KeepRunning()) {
+        Q heap(state.range(0));
+        for (auto i = 0; i < state.range(0); ++i)
+            heap.push(i, values[i]);
+        heap.build_heap();
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (auto i = 0; i < state.range(0); ++i) {
+            if (values[i] > minimum) {
+                heap.change_priority(i, values[i] -= 1);
+                ++processed;
+            }
+        }
+        setIterationTime()
+    }
+    delete[] values;
+
+    state.SetLabel("D-ary reduce priority");
+    state.SetComplexityN(processed);
+    state.SetItemsProcessed(processed);
+}
+BENCHMARK_TEMPLATE(DHeapReducePriority, dheap<>)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+BENCHMARK_TEMPLATE(DHeapReducePriority, dheap<3>)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+BENCHMARK_TEMPLATE(DHeapReducePriority, dheap<4>)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+BENCHMARK_TEMPLATE(DHeapReducePriority, dheap<5>)->Range(64, 8 << 16)->UseManualTime()->Complexity();
+
 
 BENCHMARK_MAIN()

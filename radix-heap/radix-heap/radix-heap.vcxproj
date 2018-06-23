@@ -240,6 +240,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dheap.h" />
     <ClInclude Include="radix.h" />
     <ClInclude Include="radix_oop.h" />
     <ClInclude Include="stdafx.h" />
