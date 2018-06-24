@@ -8,16 +8,6 @@ class SQLite(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "HighScoreDb", null, 1
     companion object {
         const val HIGH_SCORES_TABLE = "high_scores"
         const val USERS_TABLE = "users"
-
-        private var instance: SQLite? = null
-
-        @Synchronized
-        fun instance(context: Context): SQLite {
-            if (instance == null) {
-                instance = SQLite(context.applicationContext)
-            }
-            return instance!!
-        }
     }
 
     override fun onCreate(database: SQLiteDatabase) {

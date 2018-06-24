@@ -5,6 +5,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.Fuel.Companion.get
 import com.github.kittinunf.fuel.Fuel.Companion.post
 import com.github.kittinunf.result.Result
+import pl.vot.tomekby.mathGame.DataCallback
+import pl.vot.tomekby.mathGame.EmptyCallback
+import pl.vot.tomekby.mathGame.di
 import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.password
 import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.username
 
@@ -13,9 +16,8 @@ import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.username
  * All requests except high scores have to be authenticated using HTTP basic auth
  */
 class RemoteGameService : GameService {
-    private val resultsCount = 4L
 
-    override fun getHighScores(onSuccess: (List<HighScoreDTO>) -> Unit, onFailure: () -> Unit) {
+    override fun getHighScores(onSuccess: DataCallback<HighScoreList>, onFailure: EmptyCallback) {
         get("/scores.json")
             .responseString {_, _, result ->
                 if (result !is Result.Success) {
@@ -31,8 +33,8 @@ class RemoteGameService : GameService {
     }
 
     // Fetch game state & call proper callback on finish
-    override fun getState(onSuccess: (GameInfoDTO) -> Unit, onFailure: () -> Unit) {
-        get("/", listOf("choices" to resultsCount))
+    override fun getState(onSuccess: DataCallback<GameInfoDTO>, onFailure: EmptyCallback) {
+        get("/", listOf("choices" to di<GameConfig>().results))
             .authenticate(username, password)
             .responseString { _, _, result ->
                 if (result !is Result.Success) {

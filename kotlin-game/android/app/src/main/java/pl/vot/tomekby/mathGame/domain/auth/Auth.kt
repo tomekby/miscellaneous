@@ -1,6 +1,6 @@
 package pl.vot.tomekby.mathGame.domain.auth
 
-class Unauthorized(override var message:String): Exception(message)
+import pl.vot.tomekby.mathGame.EmptyCallback
 
 interface Auth {
     companion object {
@@ -10,7 +10,7 @@ interface Auth {
             private set
     }
 
-    fun login(username: String, password: String, onSuccess: () -> Unit, onFailure: () -> Unit)
+    fun login(username: String, password: String, onSuccess: EmptyCallback, onFailure: EmptyCallback)
     fun saveAuthData(_username: String, _password: String) {
         username = _username
         password = _password
