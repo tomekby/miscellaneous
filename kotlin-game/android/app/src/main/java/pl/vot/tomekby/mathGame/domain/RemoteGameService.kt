@@ -7,7 +7,6 @@ import com.github.kittinunf.fuel.Fuel.Companion.post
 import com.github.kittinunf.result.Result
 import pl.vot.tomekby.mathGame.DataCallback
 import pl.vot.tomekby.mathGame.EmptyCallback
-import pl.vot.tomekby.mathGame.di
 import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.password
 import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.username
 
@@ -15,7 +14,7 @@ import pl.vot.tomekby.mathGame.domain.auth.Auth.Companion.username
  * Class processing remote game state
  * All requests except high scores have to be authenticated using HTTP basic auth
  */
-class RemoteGameService : GameService {
+class RemoteGameService(private val config: GameConfig) : GameService {
 
     override fun getHighScores(onSuccess: DataCallback<HighScoreList>, onFailure: EmptyCallback) {
         get("/scores.json")
@@ -34,7 +33,7 @@ class RemoteGameService : GameService {
 
     // Fetch game state & call proper callback on finish
     override fun getState(onSuccess: DataCallback<GameInfoDTO>, onFailure: EmptyCallback) {
-        get("/", listOf("choices" to di<GameConfig>().results))
+        get("/", listOf("choices" to config.results))
             .authenticate(username, password)
             .responseString { _, _, result ->
                 if (result !is Result.Success) {

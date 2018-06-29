@@ -10,7 +10,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import pl.vot.tomekby.mathGame.DataCallback
 import pl.vot.tomekby.mathGame.EmptyCallback
-import pl.vot.tomekby.mathGame.di
 import pl.vot.tomekby.mathGame.domain.SQLite.Companion.HIGH_SCORES_TABLE
 import pl.vot.tomekby.mathGame.domain.auth.Auth
 import java.text.SimpleDateFormat
@@ -25,7 +24,7 @@ fun Date.dbFormat(): String = SimpleDateFormat("dd.MM.yyyy").format(this)
 
 typealias op<T> = Pair<String, T.(T) -> T>
 
-class LocalGameService : GameService {
+class LocalGameService(private val db: SQLite, private val config: GameConfig) : GameService {
     companion object {
         // expression constraints
         private val operandRange = 1..10
@@ -35,17 +34,17 @@ class LocalGameService : GameService {
             "%" to Long::rem,
             "*" to Long::times
         )
-
-        private var resultsRange = 0..0
-            get() = 0..(di<GameConfig>().results - 1)
         // maximum relative deviation from result; in range 0 (equals) to 1 (result value away)
         private const val resultsVariation = 0.2
     }
 
+    private var resultsRange = 0..0
+        get() = 0..(config.results - 1)
+
     override fun getHighScores(onSuccess: DataCallback<HighScoreList>, onFailure: EmptyCallback) {
         doAsync {
             try {
-                val scores = di<SQLite>().use {
+                val scores = db.use {
                      select(HIGH_SCORES_TABLE)
                         .orderBy("time", ASC)
                         .parseList(classParser<HighScoreDTO>())
@@ -87,7 +86,7 @@ class LocalGameService : GameService {
     @SuppressLint("SimpleDateFormat")
     override fun saveScore(time: Double) {
         doAsync {
-            di<SQLite>().use {
+            db.use {
                 insert(HIGH_SCORES_TABLE,
                     "member" to Auth.username,
                     "time" to time,

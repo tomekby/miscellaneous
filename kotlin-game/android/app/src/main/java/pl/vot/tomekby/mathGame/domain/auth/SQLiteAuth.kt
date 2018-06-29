@@ -9,11 +9,11 @@ import pl.vot.tomekby.mathGame.di
 import pl.vot.tomekby.mathGame.domain.SQLite
 import pl.vot.tomekby.mathGame.domain.SQLite.Companion.USERS_TABLE
 
-class SQLiteAuth : Auth {
+class SQLiteAuth(private val db: SQLite) : Auth {
 
     override fun login(username: String, password: String, onSuccess: EmptyCallback, onFailure: EmptyCallback) {
         doAsync {
-            val found = di<SQLite>().use {
+            val found = db.use {
                 select(USERS_TABLE, "count(1) c")
                     .whereSimple("username = ? AND password = ?", username, password)
                     .parseSingle(IntParser)
